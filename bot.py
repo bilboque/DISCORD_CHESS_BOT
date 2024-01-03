@@ -1,9 +1,9 @@
 from interactions import Client, Intents, listen
 
 
-bot = Client(intents=Intents.DEFAULT)
+bot = Client(intents=Intents.DEFAULT | Intents.MESSAGE_CONTENT)
 # intents are what events we want to receive from discord
-# `DEFAULT` is usually fine
+# `DEFAULT` et MESSAGE_CONTENT pour voir les messages
 
 
 # this decorator tells snek that it needs to listen for the corresponding event
