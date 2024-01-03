@@ -1,4 +1,4 @@
-from interactions import Client, Intents, listen
+from interactions import Client, Intents, listen, slash_command, SlashContext
 
 
 bot = Client(intents=Intents.DEFAULT | Intents.MESSAGE_CONTENT)
@@ -17,8 +17,13 @@ async def on_ready():
 
 @listen()
 async def on_message_create(event):
-    # This event is called when a message is sent in a channel the bot can see
-    print(f"message received: {event.message.content}")
+    if event.message.author != bot.user:
+        print(f"message received: {event.message.content}")
+
+
+@slash_command(name="ping", description="ping pong")
+async def ping_pong_command(ctx: SlashContext):
+    await ctx.send("pong")
 
 file = open(".token", "r")
 bot.start(file.readline())
