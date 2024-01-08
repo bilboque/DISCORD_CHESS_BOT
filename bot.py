@@ -1,7 +1,9 @@
 from interactions import Client, Intents, listen
+from interactions import StringSelectMenu, StringSelectOption
 from interactions import slash_command, slash_option, OptionType
 from interactions import SlashContext, SlashCommandChoice
-from interactions import Modal, ModalContext, ShortText
+from interactions.api.events import Component
+import chess
 import berserk
 
 
@@ -66,6 +68,40 @@ async def create_lichess_game(ctx: SlashContext, level):
     else:
         await ctx.send(f"You play as **black** (1: {event['state']['moves']}) --> game id :**{challenge_info['id']}**)")
 
+
+@slash_command(name="move", description="Usage /move gameID")
+@slash_option(
+        name="gameid",
+        description="id donné par le bot précédemment",
+        required=True,
+        opt_type=OptionType.STRING,
+)
+async def make_a_moove_in_lichess_game(ctx: SlashContext, gameid):
+    f = open(".tokenleo", "r")
+    session = berserk.TokenSession(f.readline())
+    f.close()
+
+    client = berserk.Client(session=session)
+    stream = client.games.stream_game_moves(gameid)
+    event = next(stream)
+
+    board = chess.Board()
+    board.set_epd(event['fen'])
+
+    mv_list = []
+    for moove in board.legal_moves:
+        mv_list.append(str(moove)) # deref le generator je ne sais pas pourquoi ca marche
+    components = StringSelectMenu(
+        placeholder="legal moves",
+        min_values=1,
+        max_values=1,
+    )
+    components.options = [StringSelectOption(label=a, value=a) for a in mv_list[:24]]
+
+    await ctx.send(f"{board.unicode()}", components=components)
+    cont = await bot.wait_for_component(components=components)
+    client.board.make_move(gameid, cont.ctx.values[0])
+    await ctx.send(f"move played {cont.ctx.values[0]}")
 
 file = open(".token", "r")
 bot.start(file.readline())
