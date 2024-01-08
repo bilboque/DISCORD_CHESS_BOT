@@ -1,6 +1,8 @@
 from interactions import Client, Intents, listen
 from interactions import slash_command, slash_option, OptionType
 from interactions import SlashContext, SlashCommandChoice
+from interactions import Modal, ModalContext, ShortText
+import berserk
 
 
 bot = Client(intents=Intents.DEFAULT | Intents.MESSAGE_CONTENT)
@@ -41,6 +43,29 @@ async def ping_pong_command(ctx: SlashContext, ping_options):
         await ctx.send("pong")
     elif ping_options == "pong":
         await ctx.send("ping")
+
+
+@slash_command(name="play", description="Usage /play level")
+@slash_option(
+        name="level",
+        description="choose stockfish level",
+        required=True,
+        opt_type=OptionType.INTEGER,
+)
+async def create_lichess_game(ctx: SlashContext, level):
+    f = open(".tokenleo", "r")
+    session = berserk.TokenSession(f.readline())
+    f.close()
+
+    client = berserk.Client(session=session)
+    challenge_info = client.challenges.create_ai(level=level)
+    stream = client.board.stream_game_state(challenge_info['id'])
+    event = next(stream)
+    if 'id' in event['white']:
+        await ctx.send(f"You play as **white** --> game id :**{challenge_info['id']}**")
+    else:
+        await ctx.send(f"You play as **black** (1: {event['state']['moves']}) --> game id :**{challenge_info['id']}**)")
+
 
 file = open(".token", "r")
 bot.start(file.readline())
