@@ -26,7 +26,7 @@ async def on_message_create(event):
         print(f"message received: {event.message.content}")
 
 
-# Basic / command avec des optione
+# exemple d'une / command avec des optione
 # /ping ping -> pong dans le channel en question,
 # /ping pong -> ping dans le channel en question
 @slash_command(name="ping", description="Usage /ping [ping, pong]")
@@ -66,7 +66,7 @@ async def create_lichess_game(ctx: SlashContext, level):
     if 'id' in event['white']:
         await ctx.send(f"You play as **white** --> game id :**{challenge_info['id']}**")
     else:
-        await ctx.send(f"You play as **black** (1: {event['state']['moves']}) --> game id :**{challenge_info['id']}**)")
+        await ctx.send(f"You play as **black** (1: {event['state']['moves']}) --> game id :**{challenge_info['id']}**")
 
 
 @slash_command(name="move", description="Usage /move gameID")
@@ -90,7 +90,9 @@ async def make_a_moove_in_lichess_game(ctx: SlashContext, gameid):
 
     mv_list = []
     for moove in board.legal_moves:
-        mv_list.append(str(moove)) # deref le generator je ne sais pas pourquoi ca marche
+        # str pour deref le generator je ne sais pas pourquoi ca marche
+        mv_list.append(str(moove))
+
     components = StringSelectMenu(
         placeholder="legal moves",
         min_values=1,
@@ -99,10 +101,12 @@ async def make_a_moove_in_lichess_game(ctx: SlashContext, gameid):
     components.options = [StringSelectOption(label=a, value=a) for a in mv_list[:24]]
 
     await ctx.send(f"{board.unicode()}", components=components)
-    cont = await bot.wait_for_component(components=components)
-    client.board.make_move(gameid, cont.ctx.values[0])
-    await ctx.send(f"move played {cont.ctx.values[0]}")
+    response = await bot.wait_for_component(components=components)
+    client.board.make_move(gameid, response.ctx.values[0])
+    await ctx.send(f"move played {response.ctx.values[0]}")
 
+
+# start the bot
 file = open(".token", "r")
 bot.start(file.readline())
 file.close()
