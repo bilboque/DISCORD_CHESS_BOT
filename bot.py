@@ -2,10 +2,8 @@ from interactions import Client, Intents, listen
 from interactions import StringSelectMenu, StringSelectOption
 from interactions import slash_command, slash_option, OptionType
 from interactions import SlashContext, SlashCommandChoice
-from interactions.api.events import Component
 import chess
 import berserk
-
 
 bot = Client(intents=Intents.DEFAULT | Intents.MESSAGE_CONTENT)
 # intents are what events we want to receive from discord
@@ -99,12 +97,10 @@ async def make_a_moove_in_lichess_game(ctx: SlashContext, gameid):
         max_values=1,
     )
     components.options = [StringSelectOption(label=a, value=a) for a in mv_list[:24]]
-
     await ctx.send(f"{board.unicode()}", components=components)
     response = await bot.wait_for_component(components=components)
     client.board.make_move(gameid, response.ctx.values[0])
     await ctx.send(f"move played {response.ctx.values[0]}")
-
 
 # start the bot
 file = open(".token", "r")
