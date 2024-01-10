@@ -88,6 +88,13 @@ async def make_a_moove_in_lichess_game(ctx: SlashContext, gameid):
     stream = client.games.stream_game_moves(gameid)
     event = next(stream)
 
+    if event['status']['name'] != "started":
+        try:
+            await ctx.send(f"this game is over:\n- status: {event['status']['name']}\n- winner: {event['winner']}")
+        except:
+            await ctx.send("something went wrong")
+        return
+
     board = chess.Board()
     board.set_epd(event['fen'])
 
