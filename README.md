@@ -12,7 +12,7 @@ On a 2 token pour lichess et un pour discord. Les files sont ".token" pour disco
 Il faut faire attention a utiliser des methodes asyncrones pour toute les fonctions du bot (en gros quand on envois un msg sur discord on met un await devant les methodes de interaction.py)
 
 ## TODO
-- rajouter une manière de checker quand une partie est finis (apres avoir jouer un coup, avant de jouer un coup) et en informer l'utilisateur
-- rajouter une commande pour abort la partie ("/abord gameid")
-- error handling (en très très gros il ne faut pas que l'app renvois des messages d'erreur sur discord)
+- (done) rajouter une manière de checker quand une partie est finis (apres avoir jouer un coup, avant de jouer un coup) et en informer l'utilisateur
+- (done) rajouter une commande pour abort la partie ("/abord gameid")
+- (somewhat) error handling (en très très gros il ne faut pas que l'app renvois des messages d'erreur sur discord)
 - un file requirement.py probablement
