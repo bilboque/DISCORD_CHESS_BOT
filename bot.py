@@ -5,6 +5,7 @@ from interactions import SlashContext, SlashCommandChoice
 import chess
 import berserk
 
+
 bot = Client(intents=Intents.DEFAULT | Intents.MESSAGE_CONTENT)
 # intents are what events we want to receive from discord
 # `DEFAULT` et MESSAGE_CONTENT pour voir les messages
@@ -53,6 +54,10 @@ async def ping_pong_command(ctx: SlashContext, ping_options):
         opt_type=OptionType.INTEGER,
 )
 async def create_lichess_game(ctx: SlashContext, level):
+    if level < 1 or level > 8:
+        await ctx.send("Le niveau du bot doit être entre 1 et 8")
+        return
+
     f = open(".tokenleo", "r")
     session = berserk.TokenSession(f.readline())
     f.close()
@@ -62,9 +67,9 @@ async def create_lichess_game(ctx: SlashContext, level):
     stream = client.board.stream_game_state(challenge_info['id'])
     event = next(stream)
     if 'id' in event['white']:
-        await ctx.send(f"You play as **white** --> game id :**{challenge_info['id']}**")
+        await ctx.send(f"You play as **white** --> game id=**{challenge_info['id']}**")
     else:
-        await ctx.send(f"You play as **black** (1: {event['state']['moves']}) --> game id :**{challenge_info['id']}**")
+        await ctx.send(f"You play as **black** (1: {event['state']['moves']}) --> game id=**{challenge_info['id']}**")
 
 
 @slash_command(name="move", description="Usage /move gameID")
@@ -101,6 +106,28 @@ async def make_a_moove_in_lichess_game(ctx: SlashContext, gameid):
     response = await bot.wait_for_component(components=components)
     client.board.make_move(gameid, response.ctx.values[0])
     await ctx.send(f"move played {response.ctx.values[0]}")
+
+
+@slash_command(name="resign", description="Usage /resign gameID")
+@slash_option(
+        name="gameid",
+        description="id donné par le bot précédemment",
+        required=True,
+        opt_type=OptionType.STRING,
+)
+async def resign_lichess_game(ctx: SlashContext, gameid):
+    f = open(".tokenleo", "r")
+    session = berserk.TokenSession(f.readline())
+    f.close()
+
+    client = berserk.Client(session=session)
+    try:
+        client.board.resign_game(game_id=gameid)
+    except:
+        await ctx.send(f"invalid game id (id={gameid})")
+    else:
+        await ctx.send(f"you resigned in your game (id={gameid})")
+
 
 # start the bot
 file = open(".token", "r")
