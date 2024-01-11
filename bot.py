@@ -4,6 +4,8 @@ from interactions import slash_command, slash_option, OptionType
 from interactions import SlashContext, SlashCommandChoice
 import chess
 import berserk
+import requests
+from json import loads
 
 
 bot = Client(intents=Intents.DEFAULT | Intents.MESSAGE_CONTENT)
@@ -134,6 +136,32 @@ async def resign_lichess_game(ctx: SlashContext, gameid):
         await ctx.send(f"invalid game id (id={gameid})")
     else:
         await ctx.send(f"you resigned in your game (id={gameid})")
+
+
+@slash_command(name="tournois", description="Usage /tournois")
+async def trounois_infos(ctx: SlashContext):
+    r = requests.get("http://127.0.0.1:5000/api/tournois_infos")
+    data = loads(r.text)
+    msg = "The tournaments played ad UNIGE chessclub:"
+    for elem in data['data']:
+        msg += f"\n- **{elem['nom']}**, {elem['date']} (id={elem['id']})"
+    await ctx.send(msg)
+
+
+@slash_command(name="resultats", description="Usage /resultat tournoiID")
+@slash_option(
+        name="id",
+        description="id du tournois",
+        required=True,
+        opt_type=OptionType.INTEGER,
+)
+async def tournois_result(ctx: SlashContext, id):
+    r = requests.get(f"http://127.0.0.1:5000/api/tournoi/{id}")
+    data = loads(r.text)
+    msg = f"Resultat du tounoi **{((data['data'])[0])['tournoi']}**"
+    for elem in data['data']:
+        msg += f"\n- {elem['resultat']} : **{elem['nom']}** avec {elem['points']} points"
+    await ctx.send(msg)
 
 
 # start the bot
