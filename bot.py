@@ -6,6 +6,7 @@ import chess
 import berserk
 import requests
 from json import loads
+import time
 
 
 bot = Client(intents=Intents.DEFAULT | Intents.MESSAGE_CONTENT)
@@ -65,6 +66,7 @@ async def create_lichess_game(ctx: SlashContext, level):
     f.close()
 
     client = berserk.Client(session=session)
+    time.sleep(0.1)
     challenge_info = client.challenges.create_ai(level=level)
     stream = client.board.stream_game_state(challenge_info['id'])
     event = next(stream)
@@ -87,7 +89,8 @@ async def make_a_moove_in_lichess_game(ctx: SlashContext, gameid):
     f.close()
 
     client = berserk.Client(session=session)
-    stream = client.games.stream_game_moves(gameid)
+    time.sleep(0.1)
+    stream = client.games.stream_game_moves(gameid)  # erreur possible si la partie n'exise pas
     event = next(stream)
 
     if event['status']['name'] != "started":
@@ -130,6 +133,7 @@ async def resign_lichess_game(ctx: SlashContext, gameid):
     f.close()
 
     client = berserk.Client(session=session)
+    time.sleep(0.1)
     try:
         client.board.resign_game(game_id=gameid)
     except:
